@@ -12,10 +12,10 @@ Term Project for CS580 3D Rendering and Graphics
 Exploration of different types of Parallax Mapping
 
 # Team Members
-* Justin
-* Chaeho
-* Matthew
-* Josh
+* Justin Shi
+* Chaeho Shin
+* Matthew Tran
+* Qihua "Josh" Sun
 
 # License
 All rights reserved.
