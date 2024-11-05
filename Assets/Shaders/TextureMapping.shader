@@ -32,11 +32,13 @@ Shader "TextureMapping" {
         float3 normal_ws: NORMAL;
       };
 
-      Texture2D _BaseMap;
-      SamplerState sampler_BaseMap;
-      float4 _BaseMap_ST;
-      float _SpecularPower;
-      float4 _SpecularColor;
+      CBUFFER_START(UnityPerMaterial)
+        Texture2D _BaseMap;
+        SamplerState sampler_BaseMap;
+        float4 _BaseMap_ST;
+        float _SpecularPower;
+        float4 _SpecularColor;
+      CBUFFER_END
 
       half3 calculate_color(Light light, half3 base_map_color, half3 world_normal, float3 world_position) {
         half3 diffuse = base_map_color * LightingLambert(light.color, light.direction, world_normal);
@@ -73,9 +75,9 @@ Shader "TextureMapping" {
         }
 
         // Ambient
-        color += base_map_color * SampleSH(i.normal_ws);
+        color += base_map_color.rgb * SampleSH(i.normal_ws);
 
-        return saturate(float4(color, 1));
+        return saturate(half4(color, 1));
       }
       ENDHLSL
     }
