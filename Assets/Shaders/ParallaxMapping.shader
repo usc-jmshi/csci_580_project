@@ -38,8 +38,8 @@ Shader "ParallaxMapping" {
         float3 position_ws: POSITIONT;
         float2 uv: TEXCOORD0;
         float3 normal_ws: NORMAL;
-        float3 tangent_ws: TANGENT;
-        float3 bitangent_ws: TANGENT;
+        float3 tangent_ws: TANGENT0;
+        float3 bitangent_ws: TANGENT1;
       };
 
       TEXTURE2D(_BaseMap);
@@ -70,7 +70,7 @@ Shader "ParallaxMapping" {
 
       float2 parallax_mapping(float2 tex_coord, float3 viewdir)
       {
-        float height = SAMPLE_TEXTURE2D(_DepthMap, sampler_BaseMap, tex_coord);
+        float height = SAMPLE_TEXTURE2D(_DepthMap, sampler_BaseMap, (half2)tex_coord);
         float2 p = viewdir.xy/viewdir.z * (height);
         return tex_coord - p;
       }
@@ -83,7 +83,7 @@ Shader "ParallaxMapping" {
         o.uv = TRANSFORM_TEX(i.uv, _BaseMap);
         o.normal_ws = TransformObjectToWorldNormal(i.normal_os.xyz);
         o.tangent_ws = TransformObjectToWorldDir(i.tangent_os.xyz);
-        o.bitangent_ws = cross(o.normal_ws, o.tangent_ws) * (o.tangent_ws.w * unity_WorldTransformParams.w);
+        o.bitangent_ws = cross(o.normal_ws, o.tangent_ws) * (i.tangent_os.w * unity_WorldTransformParams.w);
 
         return o;
       }
@@ -91,13 +91,13 @@ Shader "ParallaxMapping" {
       half4 fragment(Varyings i): SV_TARGET {
 
         float3x3 TBN = float3x3(i.tangent_ws, i.bitangent_ws, i.normal_ws);
-        float3 viewdir_ts = -(TBN * GetWorldSpaceNormalizeViewDir(i.position_ws));
+        float3 viewdir_ts = -1.0 * (mul(TBN, GetWorldSpaceNormalizeViewDir(i.position_ws)));
         float2 new_tex_coord =  parallax_mapping(i.uv, viewdir_ts);
 
         half4 base_map_color = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, new_tex_coord);
-        half4 normal = SAMPLE_TEXTURE2D(_NormalMap, sampler_BaseMap, new_tex_coord);
+        half3 normal = SAMPLE_TEXTURE2D(_NormalMap, sampler_BaseMap, new_tex_coord);
         normal = normal * 2.0 - 1.0;
-        normal = normalize(TBN * normal);
+        normal = normalize(mul(TBN, normal));
 
         half3 color = calculate_color(GetMainLight(), base_map_color.rgb, normal, i.position_ws);
         for (int index = 0; index < GetAdditionalLightsCount(); index++) {
