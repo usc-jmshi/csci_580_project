@@ -70,18 +70,18 @@ Shader "NormapMapping" {
 
       half4 fragment(Varyings i): SV_TARGET {
         half4 base_map_color = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, i.uv);
-        float3 normal = SAMPLE_TEXTURE2D(_NormalMap, sampler_BaseMap, i.uv);
+        half4 normal = SAMPLE_TEXTURE2D(_NormalMap, sampler_BaseMap, i.uv);
 
-        normal = TransformObjectToWorldNormal(normal);
+        float3 normal_ws = TransformObjectToWorldNormal(normal.xyz);
 
-        half3 color = calculate_color(GetMainLight(), base_map_color.rgb, normal, i.position_ws);
+        half3 color = calculate_color(GetMainLight(), base_map_color.rgb, normal_ws, i.position_ws);
         for (int index = 0; index < GetAdditionalLightsCount(); index++) {
           Light light = GetAdditionalLight(index, i.position_ws);
-          color += calculate_color(light, base_map_color.rgb, normal, i.position_ws);
+          color += calculate_color(light, base_map_color.rgb, normal_ws, i.position_ws);
         }
 
         // Ambient
-        color += base_map_color.rgb * SampleSH(normal);
+        color += base_map_color.rgb * SampleSH(normal_ws);
 
         return saturate(half4(color, 1));
       }
