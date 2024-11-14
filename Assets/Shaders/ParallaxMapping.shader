@@ -1,7 +1,7 @@
 Shader "ParallaxMapping" {
   Properties {
     [MainTexture] _BaseMap ("Base map", 2D) = "white" {}
-     _NormalMap("Normal Map", 2D) = "bump" {}
+    [Normal] _NormalMap("Normal Map", 2D) = "normal" {}
     _DepthMap("Depth Map", 2D) = "depth" {}
     _SpecularPower ("Specular power", Float) = 1
     _SpecularColor ("Specular color", Color) = (1, 1, 1, 1)
