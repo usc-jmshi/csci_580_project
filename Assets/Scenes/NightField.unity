@@ -131,7 +131,7 @@ GameObject:
   - component: {fileID: 98388240}
   - component: {fileID: 98388239}
   m_Layer: 0
-  m_Name: BrickParallaxMapping Wall
+  m_Name: ParallaxMapping Wall
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -643,7 +643,7 @@ GameObject:
   - component: {fileID: 988649355}
   - component: {fileID: 988649354}
   m_Layer: 0
-  m_Name: BrickParallaxMapping Sphere
+  m_Name: ParallaxMapping Sphere
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1361,7 +1361,7 @@ GameObject:
   - component: {fileID: 1859776953}
   - component: {fileID: 1859776952}
   m_Layer: 0
-  m_Name: BrickNormalMapping Wall
+  m_Name: NormalMapping Wall
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1447,7 +1447,7 @@ GameObject:
   - component: {fileID: 1918846343}
   - component: {fileID: 1918846342}
   m_Layer: 0
-  m_Name: BrickTextureMapping Sphere
+  m_Name: TextureMapping Sphere
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1533,7 +1533,7 @@ GameObject:
   - component: {fileID: 1945465539}
   - component: {fileID: 1945465538}
   m_Layer: 0
-  m_Name: BrickNormalMapping Sphere
+  m_Name: NormalMapping Sphere
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1758,7 +1758,7 @@ GameObject:
   - component: {fileID: 2086068436}
   - component: {fileID: 2086068435}
   m_Layer: 0
-  m_Name: BrickTextureMapping Wall
+  m_Name: TextureMapping Wall
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
