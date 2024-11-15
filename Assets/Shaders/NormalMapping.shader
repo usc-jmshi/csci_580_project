@@ -32,7 +32,6 @@ Shader "NormapMapping" {
         float3 position_ws: POSITIONT;
         float2 uv: TEXCOORD0;
         float3 normal_ws: NORMAL;
-        float3 tangent_ws: TANGENT;
         // these three vectors will hold a 3x3 rotation matrix
         // that transforms from tangent to world space
         half3 tspace0 : TEXCOORD1; // tangent.x, bitangent.x, normal.x
@@ -45,7 +44,6 @@ Shader "NormapMapping" {
       SAMPLER(sampler_BaseMap);
       CBUFFER_START(UnityPerMaterial)
         float4 _BaseMap_ST;
-        float4 _NormalMap_ST;
         float _SpecularPower;
         float4 _SpecularColor;
       CBUFFER_END
@@ -69,38 +67,40 @@ Shader "NormapMapping" {
 
         o.position_hcs = TransformObjectToHClip(i.position_os.xyz);
         o.position_ws = TransformObjectToWorld(i.position_os.xyz);
-        o.uv = i.uv * _BaseMap_ST.xy + _BaseMap_ST.zw;
+        o.uv = TRANSFORM_TEX(i.uv, _BaseMap);
         o.normal_ws = TransformObjectToWorldNormal(i.normal_os.xyz);
-        o.tangent_ws = TransformObjectToWorldDir(i.tangent_os.xyz);
+        half3 tangent_ws = TransformObjectToWorldDir(i.tangent_os.xyz);
 
-        // compute bitangent from cross product of normal and tangent
+        // calc bitangent
         half tangent_sign = i.tangent_os.w * unity_WorldTransformParams.w;
-        half3 bitangent_ws = cross(o.normal_ws, o.tangent_ws) * tangent_sign;
-        // output the tangent space matrix
-        o.tspace0 = half3(o.tangent_ws.x, bitangent_ws.x, o.normal_ws.x);
-        o.tspace1 = half3(o.tangent_ws.y, bitangent_ws.y, o.normal_ws.y);
-        o.tspace2 = half3(o.tangent_ws.z, bitangent_ws.z, o.normal_ws.z);
+        half3 bitangent_ws = cross(o.normal_ws, tangent_ws) * tangent_sign;
+        // tangent space to world space matrix
+        o.tspace0 = half3(tangent_ws.x, bitangent_ws.x, o.normal_ws.x);
+        o.tspace1 = half3(tangent_ws.y, bitangent_ws.y, o.normal_ws.y);
+        o.tspace2 = half3(tangent_ws.z, bitangent_ws.z, o.normal_ws.z);
 
         return o;
       }
 
       half4 fragment(Varyings i): SV_TARGET {
-        half4 base_map_color = _BaseMap.Sample(sampler_BaseMap, i.uv);
-        half3 normal = SAMPLE_TEXTURE2D(_NormalMap, sampler_BaseMap, i.uv);
+        half4 base_map_color = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, (half2)i.uv);
+        half3 normal = UnpackNormal(SAMPLE_TEXTURE2D(_NormalMap, sampler_BaseMap, (half2)i.uv));
 
-        half3 normal_ws;
-        normal_ws.x = dot(i.tspace0, normal);
-        normal_ws.y = dot(i.tspace1, normal);
-        normal_ws.z = dot(i.tspace2, normal);
+        half3 normalmap_ws;
+        normalmap_ws.x = dot(i.tspace0, normal);
+        normalmap_ws.y = dot(i.tspace1, normal);
+        normalmap_ws.z = dot(i.tspace2, normal);
 
-        half3 color = calculate_color(GetMainLight(), base_map_color.rgb, normal_ws, i.position_ws);
+        normalmap_ws = normalize(normalmap_ws);
+
+        half3 color = calculate_color(GetMainLight(), base_map_color.rgb, normalmap_ws, i.position_ws);
         for (int index = 0; index < GetAdditionalLightsCount(); index++) {
           Light light = GetAdditionalLight(index, i.position_ws);
-          color += calculate_color(light, base_map_color.rgb, normal_ws, i.position_ws);
+          color += calculate_color(light, base_map_color.rgb, normalmap_ws, i.position_ws);
         }
 
         // Ambient
-        color += base_map_color.rgb * SampleSH(normal_ws);
+        color += base_map_color.rgb * SampleSH(normalmap_ws);
 
         return saturate(half4(color, 1));
       }
