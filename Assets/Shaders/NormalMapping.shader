@@ -1,7 +1,7 @@
 Shader "NormapMapping" {
   Properties {
     [MainTexture] _BaseMap ("Base map", 2D) = "white" {}
-    [Normal] _NormapMap("Normal map", 2D) = "normal" {}
+    [Normal] _NormalMap("Normal map", 2D) = "normal" {}
     _SpecularPower ("Specular power", Float) = 1
     _SpecularColor ("Specular color", Color) = (1, 1, 1, 1)
   }
@@ -24,6 +24,7 @@ Shader "NormapMapping" {
         float4 position_os: POSITION;
         float2 uv: TEXCOORD0;
         float4 normal_os: NORMAL;
+        float4 tangent_os: TANGENT;
       };
 
       struct Varyings {
@@ -31,6 +32,12 @@ Shader "NormapMapping" {
         float3 position_ws: POSITIONT;
         float2 uv: TEXCOORD0;
         float3 normal_ws: NORMAL;
+        float3 tangent_ws: TANGENT;
+        // these three vectors will hold a 3x3 rotation matrix
+        // that transforms from tangent to world space
+        half3 tspace0 : TEXCOORD1; // tangent.x, bitangent.x, normal.x
+        half3 tspace1 : TEXCOORD2; // tangent.y, bitangent.y, normal.y
+        half3 tspace2 : TEXCOORD3; // tangent.z, bitangent.z, normal.z
       };
 
       TEXTURE2D(_BaseMap);
@@ -64,15 +71,27 @@ Shader "NormapMapping" {
         o.position_ws = TransformObjectToWorld(i.position_os.xyz);
         o.uv = i.uv * _BaseMap_ST.xy + _BaseMap_ST.zw;
         o.normal_ws = TransformObjectToWorldNormal(i.normal_os.xyz);
+        o.tangent_ws = TransformObjectToWorldDir(i.tangent_os.xyz);
+
+        // compute bitangent from cross product of normal and tangent
+        half tangent_sign = i.tangent_os.w * unity_WorldTransformParams.w;
+        half3 bitangent_ws = cross(o.normal_ws, o.tangent_ws) * tangent_sign;
+        // output the tangent space matrix
+        o.tspace0 = half3(o.tangent_ws.x, bitangent_ws.x, o.normal_ws.x);
+        o.tspace1 = half3(o.tangent_ws.y, bitangent_ws.y, o.normal_ws.y);
+        o.tspace2 = half3(o.tangent_ws.z, bitangent_ws.z, o.normal_ws.z);
 
         return o;
       }
 
       half4 fragment(Varyings i): SV_TARGET {
-        half4 base_map_color = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, i.uv);
-        half4 normal = SAMPLE_TEXTURE2D(_NormalMap, sampler_BaseMap, i.uv);
+        half4 base_map_color = _BaseMap.Sample(sampler_BaseMap, i.uv);
+        half3 normal = SAMPLE_TEXTURE2D(_NormalMap, sampler_BaseMap, i.uv);
 
-        float3 normal_ws = TransformObjectToWorldNormal(normal.xyz);
+        half3 normal_ws;
+        normal_ws.x = dot(i.tspace0, normal);
+        normal_ws.y = dot(i.tspace1, normal);
+        normal_ws.z = dot(i.tspace2, normal);
 
         half3 color = calculate_color(GetMainLight(), base_map_color.rgb, normal_ws, i.position_ws);
         for (int index = 0; index < GetAdditionalLightsCount(); index++) {
