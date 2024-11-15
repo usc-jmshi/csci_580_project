@@ -387,7 +387,7 @@ GameObject:
   m_Component:
   - component: {fileID: 623525995}
   m_Layer: 0
-  m_Name: JustTextureNoNormal
+  m_Name: UnityReference
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -840,7 +840,7 @@ GameObject:
   - component: {fileID: 1718112322}
   - component: {fileID: 1718112321}
   m_Layer: 0
-  m_Name: JustTextureWall
+  m_Name: Reference Wall
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1639,7 +1639,7 @@ GameObject:
   - component: {fileID: 2089200575}
   - component: {fileID: 2089200574}
   m_Layer: 0
-  m_Name: JustTexture Sphere
+  m_Name: Reference Sphere
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1728,6 +1728,6 @@ SceneRoots:
   - {fileID: 1964016405}
   - {fileID: 1736823000}
   - {fileID: 1083052999}
-  - {fileID: 1369168935}
   - {fileID: 623525995}
+  - {fileID: 1369168935}
   - {fileID: 1952611452}
