@@ -43,6 +43,7 @@ Shader "ParallaxMapping" {
         half3 tspace0 : TEXCOORD1; // tangent.x, bitangent.x, normal.x
         half3 tspace1 : TEXCOORD2; // tangent.y, bitangent.y, normal.y
         half3 tspace2 : TEXCOORD3; // tangent.z, bitangent.z, normal.z
+        float3 viewdir_ts : TEXCOORD4; // view direction
       };
 
       TEXTURE2D(_BaseMap);
@@ -75,8 +76,8 @@ Shader "ParallaxMapping" {
       half2 parallax_mapping(half2 tex_coord, float3 viewdir)
       {
         float height = (SAMPLE_TEXTURE2D(_DepthMap, sampler_BaseMap, (half2)tex_coord)).r;
-        half2 p = viewdir.xy/viewdir.z * (height * _DepthScale);
-        return tex_coord - p;
+        half2 p = viewdir.xy / abs(viewdir.z) * (height * _DepthScale);
+        return tex_coord + p;
       }
 
       // vertex shader
@@ -99,21 +100,20 @@ Shader "ParallaxMapping" {
         o.tspace1 = half3(tangent_ws.y, bitangent_ws.y, normal_ws.y);
         o.tspace2 = half3(tangent_ws.z, bitangent_ws.z, normal_ws.z);
 
-        return o;
-      }
-
-      half4 fragment(Varyings i): SV_TARGET {
-        float3 viewdir_ts;
-        // multiply by -1.0 because GetWorldSpaceNormalizeViewDir returns a vector *towards* the viewer, not away from the viwer
-        float3 viewdir_ws = -1.0 * GetWorldSpaceNormalizeViewDir(i.position_ws);
+        // multiply by -1.0 because GetWorldSpaceNormalizeViewDir returns a vector *towards* the viewer, not away from the viewer
+        float3 viewdir_ws = -1.0 * GetWorldSpaceNormalizeViewDir(o.position_ws);
 
         // we need to transform the world space view direction back into tangent space
         // so multiply viewdir_ws by the inverse of the tangent-to-world space matrix
         // since i.tspace0-2 is a rotation matrix, inverse == transpose
-        float3x3 TBN = transpose(float3x3(i.tspace0, i.tspace1, i.tspace2));
-        viewdir_ts = mul(TBN, viewdir_ws);
+        float3x3 TBN = transpose(float3x3(o.tspace0, o.tspace1, o.tspace2));
+        o.viewdir_ts = mul(TBN, viewdir_ws);
 
-        half2 new_tex_coord =  parallax_mapping(i.uv, viewdir_ts);
+        return o;
+      }
+
+      half4 fragment(Varyings i): SV_TARGET {
+        half2 new_tex_coord =  parallax_mapping(i.uv, i.viewdir_ts);
 
         // sample texture and normals based on new estimated texture coordinate
         half4 base_map_color = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, new_tex_coord);
