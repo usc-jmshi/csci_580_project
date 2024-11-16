@@ -20,8 +20,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: BrickParallaxMapping
-  m_Shader: {fileID: 4800000, guid: 4f9e8ac1f2988ef45a7217589b431771, type: 3}
+  m_Name: BrickSteepParallaxMapping
+  m_Shader: {fileID: 4800000, guid: 9b622686bc6e8704db3713d1092988f5, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
