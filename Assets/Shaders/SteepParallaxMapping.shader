@@ -90,6 +90,7 @@ Shader "SteepParallaxMapping" {
 
         // go through the layers until the height value is less than layer's height
         for (float i = 0.0; i < num_layers; i += 1.0) {
+          // need to add instead of subtract because our tangent space points up instead of down
           curr_tex_coord += delta_tex_coord;
           curr_height = (SAMPLE_TEXTURE2D(_DepthMap, sampler_BaseMap, (half2)curr_tex_coord)).r;
           current_layer_height += layer_height;
