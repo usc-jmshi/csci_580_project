@@ -3,7 +3,7 @@ Shader "ParallaxMapping" {
     [MainTexture] _BaseMap ("Base map", 2D) = "white" {}
     [Normal] _NormalMap("Normal Map", 2D) = "normal" {}
     _DepthMap("Depth Map", 2D) = "depth" {}
-    _DepthScale ("Depth Scale", Float) = 0.03
+    _DepthScale ("Depth Scale", Float) = 0.1
     _SpecularPower ("Specular power", Float) = 1
     _SpecularColor ("Specular color", Color) = (1, 1, 1, 1)
   }
