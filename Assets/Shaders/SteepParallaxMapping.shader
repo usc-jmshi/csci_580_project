@@ -3,7 +3,7 @@ Shader "SteepParallaxMapping" {
     [MainTexture] _BaseMap ("Base map", 2D) = "white" {}
     [Normal] _NormalMap("Normal Map", 2D) = "normal" {}
     _DepthMap("Depth Map", 2D) = "depth" {}
-    _DepthScale ("Depth Scale", Float) = 0.03
+    _DepthScale ("Depth Scale", Float) = 0.1
     _SpecularPower ("Specular power", Float) = 1
     _SpecularColor ("Specular color", Color) = (1, 1, 1, 1)
   }
@@ -82,7 +82,8 @@ Shader "SteepParallaxMapping" {
         float current_layer_height = 0.0;
 
         // the amount to shift the texture coordinates per layer (from vector P)
-        half2 p = viewdir.xy * _DepthScale;
+        // need to adjust further because our viewdir is a normalized tangent space vector
+        half2 p = viewdir.xy / abs(viewdir.z) * (_DepthScale);
         half2 delta_tex_coord = p / num_layers;
 
         half2 curr_tex_coord = tex_coord;
