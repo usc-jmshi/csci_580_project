@@ -21,7 +21,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: BrickReliefMapping
-  m_Shader: {fileID: 4800000, guid: 9b622686bc6e8704db3713d1092988f5, type: 3}
+  m_Shader: {fileID: 4800000, guid: 3beff7b3535bd904e8127daed4b3ef48, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -54,7 +54,9 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    m_Ints: []
+    m_Ints:
+    - _BinarySearchDepth: 6
+    - _SelfShadowThreshold: 1
     m_Floats:
     - _DepthScale: 0.1
     - _SpecularPower: 1

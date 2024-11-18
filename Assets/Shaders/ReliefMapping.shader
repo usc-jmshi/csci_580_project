@@ -3,7 +3,8 @@ Shader "ReliefMapping" {
     [MainTexture] _BaseMap ("Base map", 2D) = "white" {}
     [Normal] _NormalMap("Normal Map", 2D) = "normal" {}
     _DepthMap("Depth Map", 2D) = "depth" {}
-    _DepthScale ("Depth Scale", Float) = 0.03
+    _DepthScale ("Depth Scale", Float) = 0.1
+    _SelfShadowThreshold ("Self Shadow Thresold", Integer) = 1
     _BinarySearchDepth ("Binary Search Depth", Integer) = 6
     _SpecularPower ("Specular power", Float) = 1
     _SpecularColor ("Specular color", Color) = (1, 1, 1, 1)
@@ -60,7 +61,8 @@ Shader "ReliefMapping" {
         float _SpecularPower;
         float4 _SpecularColor;
         float _DepthScale; // scale height by value because parallax effects can be too overwhelming
-        int _BinarySearchDepth; 
+        int _BinarySearchDepth;
+        int _SelfShadowThreshold;
         CBUFFER_END
 
       // color equation
@@ -81,7 +83,6 @@ Shader "ReliefMapping" {
       // estimates actual texcoord based on tangent space view direction
       half3 relief_mapping(half2 tex_coord, float3 viewdir)
       {
-
         const float min_layers = 8;
         const float max_layers = 32;
         float num_layers = lerp(max_layers, min_layers, max(dot(float3(0.0, 0.0, 1.0), viewdir), 0.0));  
@@ -90,7 +91,7 @@ Shader "ReliefMapping" {
         float prev_layer_height = 0.0;
 
         // the amount to shift the texture coordinates per layer (from vector P)
-        half2 p = viewdir.xy * _DepthScale;
+        half2 p = viewdir.xy / abs(viewdir.z) * _DepthScale;
         half2 delta_tex_coord = p / num_layers;
 
         half2 curr_tex_coord = tex_coord;
@@ -137,6 +138,43 @@ Shader "ReliefMapping" {
         }
 
         return half3(half_tex_coord, reached_max_height ? -1 : 1);
+      }
+
+      bool self_shadow(Light light, float3x3 TBN, half2 new_tex_coord)
+      {
+        float3 lightdir_ts = mul(TBN, light.direction);
+
+        if (lightdir_ts.z < 0.0) return true;
+
+        const float min_layers = 8;
+        const float max_layers = 32;
+        float num_layers = lerp(max_layers, min_layers, max(dot(float3(0.0, 0.0, -1.0), lightdir_ts), 0.0));  
+        float curr_layer_height = (SAMPLE_TEXTURE2D(_DepthMap, sampler_BaseMap, new_tex_coord)).r;
+        float layer_height = curr_layer_height / num_layers;
+
+        // the amount to shift the texture coordinates per layer (from vector P)
+        // need to adjust further because our viewdir is a normalized tangent space vector
+        float2 p = lightdir_ts.xy / lightdir_ts.z * (curr_layer_height * _DepthScale);
+        float2 delta_tex_coord = p / num_layers;
+
+        float2 curr_tex_coord = new_tex_coord;
+        float curr_height = (SAMPLE_TEXTURE2D(_DepthMap, sampler_BaseMap, (half2)curr_tex_coord)).r;
+        int covered_count = 0;
+        // go through the layers until the height value is less than layer's height
+        for (float i = 0.0; i < num_layers; i += 1.0) {
+          // need to add instead of subtract because our tangent space points up instead of down
+          curr_tex_coord += delta_tex_coord;
+          curr_height = (SAMPLE_TEXTURE2D(_DepthMap, sampler_BaseMap, (half2)curr_tex_coord)).r;
+          curr_layer_height -= layer_height;
+          if (curr_layer_height > curr_height)
+          {
+            covered_count += 1;
+            if (covered_count > _SelfShadowThreshold) break;
+          }
+        }
+
+        // add cover count instead of self shadowing on single detection for better accuracy
+        return covered_count > _SelfShadowThreshold;
       }
 
       // vertex shader
@@ -192,10 +230,19 @@ Shader "ReliefMapping" {
           normalmap_ws.z = dot(i.tspace2, normal);
           normalmap_ws = normalize(normalmap_ws);
 
+          bool is_shadowed = self_shadow(GetMainLight(), TBN, new_tex_coord);
           half3 color = calculate_color(GetMainLight(), base_map_color.rgb, normalmap_ws, i.position_ws);
+          if (is_shadowed)
+          {
+            color *= 0.0;
+          }
           for (int index = 0; index < GetAdditionalLightsCount(); index++) {
             Light light = GetAdditionalLight(index, i.position_ws);
-            color += calculate_color(light, base_map_color.rgb, normalmap_ws, i.position_ws);
+            bool is_additional_light_shadowed = self_shadow(light, TBN, new_tex_coord);
+            if (!is_additional_light_shadowed)
+            {
+              color += calculate_color(light, base_map_color.rgb, normalmap_ws, i.position_ws);
+            }
           }
 
           // Ambient
