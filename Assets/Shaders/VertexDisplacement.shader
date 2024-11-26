@@ -6,8 +6,6 @@ Shader "VertexDisplacement" {
     _DepthScale ("Depth Scale", Float) = 0.03
     _SpecularPower ("Specular power", Float) = 1
     _SpecularColor ("Specular color", Color) = (1, 1, 1, 1)
-    _TesselationEdgeFactor ("Tesselation Edge Factor", Float) = 1
-    _TesselationInsideFactor ("Tesselation Inside Factor", Float) = 1
   }
 
   SubShader {
