@@ -6,6 +6,7 @@ Shader "VertexDisplacement" {
     _DepthScale ("Depth Scale", Float) = 0.03
     _SpecularPower ("Specular power", Float) = 1
     _SpecularColor ("Specular color", Color) = (1, 1, 1, 1)
+    _TessellationFactor ("_Tessellation Factor", Float) = 200.0
   }
 
   SubShader {
@@ -96,6 +97,7 @@ Shader "VertexDisplacement" {
         float _SpecularPower;
         float4 _SpecularColor;
         float _DepthScale; // scale height by value because parallax effects can be too overwhelming
+        float _TessellationFactor;
       CBUFFER_END
 
       // color equation
@@ -145,10 +147,11 @@ Shader "VertexDisplacement" {
         UNITY_SETUP_INSTANCE_ID(patch[0]);
         // Temporary numbers (high b/c of the cube mesh low vertex count)
         TesselationFactors o;
-        o.edge[0] = 100;
-        o.edge[1] = 100;
-        o.edge[2] = 100;
-        o.inside = 100;
+        float factor = _TessellationFactor;
+        o.edge[0] = factor;
+        o.edge[1] = factor;
+        o.edge[2] = factor;
+        o.inside = factor;
         return o;
       }
 
@@ -288,6 +291,7 @@ Shader "VertexDisplacement" {
         float _SpecularPower;
         float4 _SpecularColor;
         float _DepthScale; // scale height by value because parallax effects can be too overwhelming
+        float _TessellationFactor;
       CBUFFER_END
 
       // vertex shader
@@ -322,10 +326,11 @@ Shader "VertexDisplacement" {
         UNITY_SETUP_INSTANCE_ID(patch[0]);
         // Temporary numbers (high b/c of the cube mesh low vertex count)
         TesselationFactors o;
-        o.edge[0] = 100;
-        o.edge[1] = 100;
-        o.edge[2] = 100;
-        o.inside = 100;
+        float factor = _TessellationFactor;
+        o.edge[0] = factor;
+        o.edge[1] = factor;
+        o.edge[2] = factor;
+        o.inside = factor;
         return o;
       }
 
