@@ -13,7 +13,8 @@ Shader "VertexDisplacement" {
     Tags {
       "RenderPipeline" = "UniversalPipeline"
       "Queue" = "Geometry"
-      "LightMode" = "UniversalForward"
+      "LightMode" = "UniversalForwardOnly"
+      "UniversalMaterialType" = "Lit" 
     }
 
     Pass {
@@ -223,7 +224,10 @@ Shader "VertexDisplacement" {
 
     Pass {
       Name "ShadowCaster"
-      Tags { "LightMode"="ShadowCaster" }
+      Tags {
+        "LightMode"="ShadowCaster"
+        //"LightMode" = "UniversalGBuffer"
+      }
 
       ZWrite On
       ZTest LEqual

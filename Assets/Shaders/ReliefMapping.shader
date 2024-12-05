@@ -13,18 +13,18 @@ Shader "ReliefMapping" {
   SubShader {
     Tags {
       "RenderPipeline" = "UniversalPipeline"
-      "Queue" = "Transparent"
-      "IgnoreProjector"="True"
-      "RenderType"="Transparent"
+      "Queue" = "Geometry"
+      //"IgnoreProjector"="True"
+      //"RenderType"="Transparent"
     }
-    ZWrite Off
-    Blend SrcAlpha OneMinusSrcAlpha
+    //ZWrite Off
+    //Blend SrcAlpha OneMinusSrcAlpha
 
     Pass {
       HLSLPROGRAM
       // allow transparency
-      #pragma vertex vertex alpha
-      #pragma fragment fragment alpha
+      #pragma vertex vertex
+      #pragma fragment fragment
 
       #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
       #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
